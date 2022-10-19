@@ -1,20 +1,32 @@
 import { useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 
+const lerp = (x, y, a) => x * (1 - a) + y * a
+const invlerp = (x, y, a) => clamp((a - x) / (y - x))
+const clamp = (a, min = 0, max = 1) => Math.min(max, Math.max(min, a))
+const range = (x1, y1, x2, y2, a) => lerp(x2, y2, invlerp(x1, y1, a))
+const speed = 0.01
+
 function Box(props) {
   // This reference gives us direct access to the THREE.Mesh object
   const ref = useRef()
   // Hold state for hovered and clicked events
   const [hovered, hover] = useState(false)
-  const [clicked, click] = useState(false)
+  const [clicked, click] = useState(true)
   // Subscribe this component to the render-loop, rotate the mesh every frame
-  useFrame((state, delta) => (ref.current.rotation.x += delta))
+  useFrame((state, delta) => {
+    var x = ref.current.scale.x
+    // if (clicked) x += speed * delta
+    // else x -= speed * delta
+    // ref.current.scale.x = clamp(x, 1, 2)
+    ref.current.scale.x += lerp(1, 2, clamp(speed * delta))
+  })
   // Return the view, these are regular Threejs elements expressed in JSX
   return (
     <mesh
       {...props}
       ref={ref}
-      scale={clicked ? 1.5 : 1}
+      scale={1}
       onClick={(event) => click(!clicked)}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}>
